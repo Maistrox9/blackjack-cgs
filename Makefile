@@ -43,4 +43,4 @@ card.o: card.cpp
 	g++ -c card.cpp
 
 clean:
-	rm *.o
+	rm *.o server client blackjack

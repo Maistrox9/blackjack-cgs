@@ -46,11 +46,7 @@ class Game {
 		void flush_player();
 		void flush_player(int player_position);
 		void flush_dealer();
-		void players_bet();
 		void deal_first_hands();
-		void check_players();
-		void check_dealer();
-		void final_status();
 };
 
 
