@@ -1,8 +1,4 @@
-#include <string>
-#include <vector>
-#include <iostream>
 #include "headers/player.h"
-
 
 Player::Player(std::string name) {
 	this->name = name;
@@ -20,12 +16,28 @@ std::string Player::get_hand() {
 	return this->hand.get_cards();
 }
 
+std::string Player::get_ui_hand() {
+	return this->hand.get_ui_cards();
+}
+
 std::string Player::get_name() {
 	return this->name;
 }
 
 int Player::get_wallet() {
 	return this->wallet;
+}
+
+int Player::get_bet() {
+	return this->bet;
+}
+
+void Player::set_name(std::string name) {
+	this->name = name;
+}
+
+void Player::set_wallet(unsigned int wallet) {
+	this->wallet = wallet;
 }
 
 void Player::add_bet(int bet) {

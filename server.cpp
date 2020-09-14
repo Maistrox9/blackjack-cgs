@@ -1,5 +1,5 @@
-#include "headers/server.h"
 #include <iostream>
+#include "headers/server.h"
 
 void error(const char *msg) {
     perror(msg);

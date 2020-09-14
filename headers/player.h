@@ -1,8 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
+
+#include <string>
 #include "hand.h"
 #include "card.h"
-
 
 class Player {
 
@@ -19,8 +20,12 @@ class Player {
 		void hand_add_card(Card card);
 		int get_hand_value();
 		std::string get_hand();
+		std::string get_ui_hand();
 		std::string get_name();
 		int get_wallet();
+		int get_bet();
+		void set_name(std::string name);
+		void set_wallet(unsigned int);
 		void add_bet(int bet);
 		void won_bet();
 		void lost_bet();

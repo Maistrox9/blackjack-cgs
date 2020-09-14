@@ -1,6 +1,6 @@
-#include "headers/client.h"
 #include <iostream>
 #include <string>
+#include "headers/client.h"
 
 std::string input_message();
 
@@ -59,7 +59,9 @@ int main() {
         } while (msg != "hit" && msg != "stay");
 
         client.send_msg(msg);
-        hand_value = stoi(client.recv_msg());
+        if(msg == "hit")
+            hand_value = stoi(client.recv_msg());
+            
     } while(msg == "hit" && hand_value < 21);
 
     do {

@@ -10,8 +10,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdint.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 class Server {
     int serv_sock, portno;

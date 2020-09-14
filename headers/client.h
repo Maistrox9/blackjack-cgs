@@ -11,8 +11,8 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <netdb.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 class Client {
     int cli_sock, portno, hostname, n;
@@ -28,7 +28,7 @@ class Client {
         void send_msg(std::string message);
         std::string recv_msg();
         void setup_socket(int pn);
-        void connect_to_server();
+        bool connect_to_server();
         void close_socket();
 };
 

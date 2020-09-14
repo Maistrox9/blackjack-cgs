@@ -1,14 +1,13 @@
-#include "headers/server.h"
-#include "headers/game.h"
 #include <iostream>
 #include <string>
-
+#include "headers/server.h"
+#include "headers/game.h"
 
 int main() {
     //setup server and connect to clients
     Server server;
     server.setup_socket(20202);
-    server.listen_for_connections(3);
+    server.listen_for_connections(2);
     //setup game
     Game game;
     std::cout << "[=]Game Started!" << std::endl;
@@ -34,7 +33,7 @@ int main() {
         server.send_msg(server.get_client_socket(i), "bet!");
         server.send_msg(server.get_client_socket(i), std::to_string(wallet));
         msg = server.recv_msg(server.get_client_socket(i));
-        game.add_bet_player(i, std::stoi(msg));
+        game.set_bet_player(i, std::stoi(msg));
         msg = "[" + name + "] betted " + msg + "$";
         server.send_msg_to_all_except(i, msg);
     }
@@ -59,15 +58,13 @@ int main() {
             if(hand_value < 21) {
                 server.send_msg(server.get_client_socket(i), "hit or stay?");
                 msg = server.recv_msg(server.get_client_socket(i));
+                server.send_msg_to_all_except(i, name + ": " + msg);
                 if (msg == "hit") {
                     game.add_card_player(i);
                     hand_value = game.get_player_hand_value(i);
                     server.send_msg(server.get_client_socket(i), std::to_string(hand_value));
-                    server.send_msg_to_all_except(i, name + ": hit");
                     server.send_msg_to_all("\n\t" + name + ":\n\t---\n\t" + game.get_player_hand(i) + "\n\t Total: " + std::to_string(hand_value) + "\n\t---");
                 }
-                else
-                    server.send_msg_to_all_except(i, name + ": stay");
             }
             if(hand_value == 21)
                 server.send_msg_to_all(name + " BLACKJACK!");

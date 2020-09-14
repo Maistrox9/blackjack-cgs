@@ -1,10 +1,19 @@
-all: server client
+all: blackjack server client
 
-server: main_server.o server.o game.o player.o hand.o deck.o card.o
-	g++ -W -Wall -g main_server.o server.o game.o player.o hand.o deck.o card.o -o server
+blackjack: blackjack.o ui.o client.o game.o player.o hand.o deck.o card.o
+	g++ -W -Wall blackjack.o ui.o client.o game.o player.o hand.o deck.o card.o -o blackjack
+
+server: main_server.o ui.o server.o game.o player.o hand.o deck.o card.o
+	g++ -W -Wall main_server.o ui.o server.o game.o player.o hand.o deck.o card.o -o server
 
 client: main_client.o client.o
-	g++ -W -Wall -g main_client.o client.o -o client
+	g++ -W -Wall main_client.o client.o -o client
+
+blackjack.o: blackjack.cpp
+	g++ -c blackjack.cpp
+
+ui.o: ui.cpp
+	g++ -c ui.cpp
 
 main_server.o: main_server.cpp
 	g++ -c main_server.cpp

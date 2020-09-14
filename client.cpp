@@ -1,16 +1,23 @@
-#include "headers/client.h"
 #include <iostream>
 #include <limits>
+#include <unistd.h>
+#include "headers/client.h"
 
 void error(const char *msg) {
     perror(msg);
     exit(0);
 }
 
-void check(int exp, const char *msg) {
+bool check(int exp, const char *msg, bool wait = false) {
     if(exp < 0) {
-        error(msg);
+        perror(msg);
+        if(!wait)
+            exit(0);
+        else
+            return false;
     }
+    else
+        return true;
 }
 
 void Client::send_msg(std::string msg) {
@@ -57,10 +64,33 @@ void Client::setup_socket(int pn) {
     serv_addr.sin_port = htons(portno);
 }
 
-void Client::connect_to_server() {
-    check(connect(cli_sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)), "[-]ERROR connecting");
+bool Client::connect_to_server() {
+    char retry;
+    int i;
+    std::cout << "[~]Trying to connect to server...." << std::endl;
+    do {
+        for(i=0; i < 10; i++) {
+            if(check(connect(cli_sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)), "[-]Failed to connect to Server.", true))
+                break;
+            else
+                usleep(1000000);
+        }
+        if(i < 10) {
+            std::cout << "[+]Connected to Server." << std::endl;
+            break;
+        }
+        else {
+            std::cout << "[-]Couldn't connect to Server." << std::endl;
+            do {
+                std::cout << "[#]Retry? [y/n]: ";
+                std::cin >> retry;
+            } while(retry != 'y' && retry != 'n');
+            if(retry == 'n')
+                return false;
+        }
+    } while(retry == 'y');
 
-    std::cout << "[+]Connected to Server." << std::endl;
+    return true;
 }
 
 void Client::close_socket() {

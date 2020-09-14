@@ -1,7 +1,4 @@
-#include <string>
-#include <vector>
 #include "headers/deck.h"
-
 
 Card Deck::deal_card() {
 	// return one random card

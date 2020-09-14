@@ -1,20 +1,25 @@
 #ifndef CARD_H
 #define CARD_H
 
+#include <string>
+#include <vector>
 
 class Card {
 
-	std::string rank;
-	std::string suit;
+	char rank;
+	char suit;
+	std::vector<std::string> ui_cardv;
 
 	public:
-		Card(std::string rank, std::string suit);
+		Card(char rank, char suit);
 
-		std::string get_rank();
+		char get_rank();
 
-		std::string get_suit();
+		char get_suit();
 
 		std::string get_card();
+
+		std::vector<std::string> get_ui_cardv();
 };
 
 
