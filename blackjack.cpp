@@ -282,23 +282,27 @@ bool new_game() {
         } while(hit_stay == "hit" && p_hand_value < 21);
         p_hand = game.get_player_ui_hand();
         //check dealer
-        do {
-            d_hand_value = game.get_dealer_hand_value();
-            system("clear");
-            ui::title();
-            ui::header(p_name, p_wallet, p_bet);
-            ui::hand("Dealer", game.get_dealer_ui_hand(), game.get_dealer_hand_value());
-            ui::hand("You", p_hand, p_hand_value);
-            if(d_hand_value == 21) {
-                std::cout << "Dealer BlackJack\n" << std::endl;
-            }
-            else if(d_hand_value > 21) {
-                std::cout << "Dealer Busted\n" << std::endl;
-            }
-            else if(d_hand_value < 17) {
-                game.add_card_dealer();
-            }
-        } while(d_hand_value < 17);
+        if(p_hand_value <= 21) {
+            do {
+                d_hand_value = game.get_dealer_hand_value();
+                system("clear");
+                ui::title();
+                ui::header(p_name, p_wallet, p_bet);
+                ui::hand("Dealer", game.get_dealer_ui_hand(), game.get_dealer_hand_value());
+                ui::hand("You", p_hand, p_hand_value);
+                if(d_hand_value > 21) 
+                    std::cout << "Dealer Busted\n" << std::endl;
+                else if(d_hand_value < 17) 
+                    game.add_card_dealer();
+            } while(d_hand_value < 17);
+        }
+        system("clear");
+        ui::title();
+        ui::header(p_name, p_wallet, p_bet);
+        ui::hand("Dealer", game.get_dealer_ui_hand(), game.get_dealer_hand_value());
+        ui::hand("You", p_hand, p_hand_value);
+        if(d_hand_value == 21) 
+            std::cout << "Dealer BlackJack\n" << std::endl;
         //final status
         if(p_hand_value > 21 || (p_hand_value < d_hand_value && d_hand_value <=21)) {
             std::cout << "*You: LOST!" << std::endl;
@@ -308,9 +312,8 @@ bool new_game() {
             std::cout << "*You: WON!" << std::endl;
             game.set_won_player();
         }
-        else if(p_hand_value == d_hand_value) {
+        else if(p_hand_value == d_hand_value) 
             std::cout << "*You: MATCH THE DEALER!" << std::endl;
-        }
         game.flush_player();
         game.flush_dealer();
         do {
@@ -427,6 +430,7 @@ void get_bet() {
         system("clear");
         ui::title();
         ui::header(name, wallet_v, bet, times);
+        std::cout << "[bet: ↑ ↓ || W S]\n[times: ← → || A D]\n" << std::endl;
         std::cout << "place your bet!" << std::endl;
         switch (getch()) {
             case KEY_ARROW:
@@ -439,7 +443,7 @@ void get_bet() {
                             }
                             break;
                         case KEY_DOWN: 
-                            if(bet > 0 && (bet-times) >= 0 && (wallet_v-times) >= 0) {
+                            if(bet > 0 && (bet-times) >= 0 && (wallet_v+times) <= wallet) {
                                 bet -= times;
                                 wallet_v += times;
                             }
@@ -478,7 +482,7 @@ void get_bet() {
                 }
                 break;
             case KEY_S:
-                if(bet > 0 && (bet-times) >= 0 && (wallet_v-times) >= 0) {
+                if(bet > 0 && (bet-times) >= 0 && (wallet_v+times) <= wallet) {
                     bet -= times;
                     wallet_v += times;
                 }
@@ -507,6 +511,7 @@ void get_bet() {
                     }
                 }
                 break;
+                
             case KEY_ENTER:
                 game.set_bet_player(bet);
                 done = true;

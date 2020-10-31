@@ -16,10 +16,10 @@ void ui::title(){
 
 void ui::start_menu_1(){
     std::string str = R"(
-            [X] Single Player
-            [ ] Multi Player
-            [ ] How to Play
-            [ ] Exit
+                [X] Single Player
+                [ ] Multi Player
+                [ ] How to Play
+                [ ] Exit
     )";
     
     std::cout << str << std::endl;
@@ -27,10 +27,10 @@ void ui::start_menu_1(){
 
 void ui::start_menu_2(){
     std::string str = R"(
-            [ ] Single Player
-            [X] Multi Player
-            [ ] How to Play
-            [ ] Exit
+                [ ] Single Player
+                [X] Multi Player
+                [ ] How to Play
+                [ ] Exit
     )";
     
     std::cout << str << std::endl;
@@ -38,10 +38,10 @@ void ui::start_menu_2(){
 
 void ui::start_menu_3(){
     std::string str = R"(
-            [ ] Single Player
-            [ ] Multi Player
-            [X] How to Play
-            [ ] Exit
+                [ ] Single Player
+                [ ] Multi Player
+                [X] How to Play
+                [ ] Exit
     )";
     
     std::cout << str << std::endl;
@@ -49,10 +49,10 @@ void ui::start_menu_3(){
 
 void ui::start_menu_4(){
     std::string str = R"(
-            [ ] Single Player
-            [ ] Multi Player
-            [ ] How to Play
-            [X] Exit
+                [ ] Single Player
+                [ ] Multi Player
+                [ ] How to Play
+                [X] Exit
     )";
     
     std::cout << str << std::endl;
@@ -60,9 +60,9 @@ void ui::start_menu_4(){
 
 void ui::singleplayer_menu_1() {
     std::string str = R"(
-            [X] New Game
-            [ ] Load Game
-            [ ] Back
+                [X] New Game
+                [ ] Load Game
+                [ ] Back
     )";
     
     std::cout << str << std::endl;
@@ -70,9 +70,9 @@ void ui::singleplayer_menu_1() {
 
 void ui::singleplayer_menu_2() {
     std::string str = R"(
-            [ ] New Game
-            [X] Load Game
-            [ ] Back
+                [ ] New Game
+                [X] Load Game
+                [ ] Back
     )";
     
     std::cout << str << std::endl;
@@ -80,9 +80,9 @@ void ui::singleplayer_menu_2() {
 
 void ui::singleplayer_menu_3() {
     std::string str = R"(
-            [ ] New Game
-            [ ] Load Game
-            [X] Back
+                [ ] New Game
+                [ ] Load Game
+                [X] Back
     )";
     
     std::cout << str << std::endl;
@@ -90,9 +90,9 @@ void ui::singleplayer_menu_3() {
 
 void ui::multiplayer_menu_1() {
     std::string str = R"(
-            [X] Host New Game
-            [ ] Join Game
-            [ ] Back
+                [X] Host New Game
+                [ ] Join Game
+                [ ] Back
     )";
     
     std::cout << str << std::endl;
@@ -100,9 +100,9 @@ void ui::multiplayer_menu_1() {
 
 void ui::multiplayer_menu_2() {
     std::string str = R"(
-            [ ] Host New Game
-            [X] Join Game
-            [ ] Back
+                [ ] Host New Game
+                [X] Join Game
+                [ ] Back
     )";
     
     std::cout << str << std::endl;
@@ -110,9 +110,9 @@ void ui::multiplayer_menu_2() {
 
 void ui::multiplayer_menu_3() {
     std::string str = R"(
-            [ ] Host New Game
-            [ ] Join Game
-            [X] Back
+                [ ] Host New Game
+                [ ] Join Game
+                [X] Back
     )";
     
     std::cout << str << std::endl;
@@ -147,21 +147,21 @@ void ui::hand(std::string name, std::string hand, int total, bool dealer_first_r
 
 void ui::under_construction() {
     std::string str = R"(
-     .------------------------------------------------------------------. 
-    | .----------------------------------------------------------------. |
-    | |                                                                | |
-    | |                               __   ___  __                     | |
-    | |                    |  | |\ | |  \ |__  |__)                    | |
-    | |                    \__/ | \| |__/ |___ |  \                    | |
-    | |                                                                | |
-    | |      __   __        __  ___  __        __  ___    __           | |
-    | |     /  ` /  \ |\ | /__`  |  |__) |  | /  `  |  | /  \ |\ |     | |
-    | |     \__, \__/ | \| .__/  |  |  \ \__/ \__,  |  | \__/ | \|     | |
-    | |                                                                | |
-    | |                                                                | |
-    | |                  (Press any key to continue)                   | |
-    | '----------------------------------------------------------------' |
-     '------------------------------------------------------------------' 
+         .------------------------------------------------------------------. 
+        | .----------------------------------------------------------------. |
+        | |                                                                | |
+        | |                               __   ___  __                     | |
+        | |                    |  | |\ | |  \ |__  |__)                    | |
+        | |                    \__/ | \| |__/ |___ |  \                    | |
+        | |                                                                | |
+        | |      __   __        __  ___  __        __  ___    __           | |
+        | |     /  ` /  \ |\ | /__`  |  |__) |  | /  `  |  | /  \ |\ |     | |
+        | |     \__, \__/ | \| .__/  |  |  \ \__/ \__,  |  | \__/ | \|     | |
+        | |                                                                | |
+        | |                                                                | |
+        | |                  (Press any key to continue)                   | |
+        | '----------------------------------------------------------------' |
+         '------------------------------------------------------------------' 
     )";
 
     std::cout << str << std::endl;
