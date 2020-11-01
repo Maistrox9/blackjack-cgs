@@ -3,11 +3,6 @@
 #include <unistd.h>
 #include "headers/client.h"
 
-void error(const char *msg) {
-    perror(msg);
-    exit(0);
-}
-
 bool check(int exp, const char *msg, bool wait = false) {
     if(exp < 0) {
         perror(msg);
@@ -69,13 +64,13 @@ bool Client::connect_to_server() {
     int i;
     std::cout << "[~]Trying to connect to server...." << std::endl;
     do {
-        for(i=0; i < 10; i++) {
+        for(i=0; i < 5; i++) {
             if(check(connect(cli_sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)), "[-]Failed to connect to Server.", true))
                 break;
             else
                 usleep(1000000);
         }
-        if(i < 10) {
+        if(i < 5) {
             std::cout << "[+]Connected to Server." << std::endl;
             break;
         }

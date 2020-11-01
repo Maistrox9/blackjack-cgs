@@ -1,10 +1,13 @@
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <time.h>
 #include <termios.h>
 #include <unistd.h>
+#include <thread>
 #include "headers/ui.h"
 #include "headers/game.h"
+#include "headers/server.h"
 #include "headers/client.h"
 
 #define KEY_ENTER 10
@@ -28,6 +31,7 @@ void instruction_menu();
 bool new_game();
 void load_game();
 void host_new_game();
+void game_server(int, int);
 bool join_game();
 void get_name();
 void get_bet();
@@ -337,25 +341,62 @@ void load_game() {
 }
 
 void host_new_game() {
-    //const char * server_path = (get_current_dir() + "/server").c_str();
-    //system(".../Open-Casino-BlackJack/server'");
-    //join_game();
+    int port_number;
+    int num_of_players;
     system("clear");
     ui::title();
-    ui::under_construction();
-    //ui::instructions();
-    getch();
+    //ui::under_construction();
+    do {
+        std::string s = "";
+        std::cout << "Enter port number (Default: 31210): ";
+        getline(std::cin, s);
+        std::stringstream ss(s);
+        try {
+            if(s.empty()) port_number = 31210;
+            else port_number = std::stoi(s);
+        }
+        catch(...) {
+            port_number = -1;
+        }
+    } while(port_number < 0 || port_number > 65535);
+    std::cout << port_number << std::endl;
+    do {
+        std::cout << "How many players (between 2 and 10): ";
+        std::cin >> num_of_players;
+    } while(num_of_players < 2 || num_of_players > 10);
+    std::thread client_thread(join_game);
+    game_server(port_number, num_of_players);
+    client_thread.join();
 }
 
 bool join_game() {
+    int server_port_number;
     Client client;
-    client.setup_socket(20202);
-    if(!client.connect_to_server())
-        return false;
+    do {
+        std::string s = "";
+        std::cout << "Enter port number (Default: 31210): ";
+        getline(std::cin, s);
+        std::stringstream ss(s);
+        try {
+            if(s.empty()) server_port_number = 31210;
+            else server_port_number = std::stoi(s);
+        }
+        catch(...) {
+            server_port_number = -1;
+        }
+    } while(server_port_number < 0 || server_port_number > 65535);
+    client.setup_socket(server_port_number);
+    if(!client.connect_to_server()) return false;
     std::string msg;
 
     //name );
-
+    do {
+        msg = client.recv_msg();
+        system("clear");
+        ui::title();
+        std::cout << "==> Server: " << msg << std::endl;
+    } while(msg != "Plaese enter your name");
+    
     do {
         std::cout << "==> You: ";
         std::cin >> msg;
@@ -366,6 +407,8 @@ bool join_game() {
     //bet
     do {
         msg = client.recv_msg();
+        system("clear");
+        ui::title();
         std::cout << "==> Server: " << msg << std::endl;
     } while(msg != "bet!");
 
@@ -389,8 +432,14 @@ bool join_game() {
     int hand_value;
     do {
         do {
-        msg = client.recv_msg();
-        std::cout << "==> Server: " << msg << std::endl;
+            msg = client.recv_msg();
+            if(msg.substr(1,6) == "Dealer") {
+                system("clear");
+                ui::title();
+                std::cout << msg << std::endl;
+            }
+            else
+                std::cout << "==> Server: " << msg << std::endl;
         } while(msg != "hit or stay?");
 
         do {
@@ -406,12 +455,131 @@ bool join_game() {
 
     do {
         msg = client.recv_msg();
-        std::cout << "==> Server: " << msg << std::endl;
+        if(msg.substr(0,2) == "\n") {
+            system("clear");
+            ui::title();
+            std::cout << msg << std::endl;
+        }
+        else
+            std::cout << "==> Server: " << msg << std::endl;
     } while(msg != ":exit");
 
     client.close_socket();
 
     return true;
+}
+
+void game_server(int port_number, int num_of_players) {
+    //setup server and connect to clients
+    Server server;
+    server.setup_socket(port_number);
+    server.listen_for_connections(num_of_players);
+    //setup game
+    Game game;
+    server.send_msg_to_all("The Game has finally started. The server will now take everyone's name.");
+    //get players names
+    for(unsigned int i=0; i < num_of_players; i++) {
+        server.send_msg_to_all_except(i, "Waiting for player " + std::to_string(i+1) + " to enter his name.");
+        server.send_msg(server.get_client_socket(i), "Plaese enter your name");
+        std::string name = server.recv_msg(server.get_client_socket(i));
+        game.add_player(name);
+        server.send_msg(server.get_client_socket(i), "Your name [" + name + "] was successfully added.");
+        server.send_msg_to_all_except(i, "Player" + std::to_string(i+1) + " name: [" + name + "]");
+    }
+    //get players bet
+    std::string msg;
+    server.send_msg_to_all("Betting Now!");
+    for(unsigned int i=0; i < num_of_players; i++) {
+        std::string name = game.get_player_name(i);
+		int wallet = game.get_player_wallet(i);
+        msg = "[" + name + "] has " + std::to_string(wallet) + "$";
+        server.send_msg_to_all(msg);
+        server.send_msg_to_all_except(i, "[" + name + "] is betting....");
+        server.send_msg(server.get_client_socket(i), "bet!");
+        server.send_msg(server.get_client_socket(i), std::to_string(wallet));
+        msg = server.recv_msg(server.get_client_socket(i));
+        game.set_bet_player(i, std::stoi(msg));
+        msg = "[" + name + "] betted " + msg + "$";
+        server.send_msg_to_all_except(i, msg);
+    }
+    //deal first hands
+    std::vector<std::string> all_hands;
+    std::string all_hands_str;
+    game.add_card_dealer(true);
+    for(unsigned int i=0; i < num_of_players; i++) {
+        game.add_card_player(i);
+    }
+    game.add_card_dealer();
+    all_hands.push_back(ui::hand_str("Dealer", game.get_dealer_ui_hand(true), game.get_dealer_hand_value(true), true));
+    for(unsigned int i=0; i < num_of_players; i++) {
+        all_hands.push_back(ui::hand_str(game.get_player_name(i), game.get_player_ui_hand(i), game.get_player_hand_value(i)));
+    }
+    //show hands
+    all_hands_str = "";
+    std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+    server.send_msg_to_all(all_hands_str);
+    //check players
+    int hand_value;
+    for(unsigned int i=0; i < num_of_players; i++) {
+        std::string name = game.get_player_name(i);;
+        all_hands_str = "";
+        std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+        server.send_msg_to_all_except(i, all_hands_str + "\n==> Server: Cheking [" + name + "]....");
+        hand_value = game.get_player_hand_value(i);
+        do {
+            if(hand_value < 21) {
+                server.send_msg(server.get_client_socket(i), "hit or stay?");
+                msg = server.recv_msg(server.get_client_socket(i));
+                if (msg == "hit") {
+                    game.add_card_player(i);
+                    hand_value = game.get_player_hand_value(i);
+                    server.send_msg(server.get_client_socket(i), std::to_string(hand_value));
+                    all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), hand_value);
+                }
+                all_hands_str = "";
+                std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+                server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + ": " + msg);
+            }
+            if(hand_value == 21)
+                server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + " BLACKJACK!");
+            else if(hand_value > 21)
+                server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + " BUSTED!");
+        } while(msg == "hit" && hand_value < 21);
+    }
+    //check dealer
+    do {
+        hand_value = game.get_dealer_hand_value();
+        server.send_msg_to_all("\n\tDealer:\n\t---\n\t" + game.get_dealer_hand() + "\n\t Total: " + std::to_string(hand_value) + "\n\t---");
+        if(hand_value == 21)
+			server.send_msg_to_all("Dealer BlackJack!");
+		else if(hand_value > 21)
+			server.send_msg_to_all("Dealer Busted!");
+		else if(hand_value < 17)
+			game.add_card_dealer();
+    } while(hand_value < 17);
+    //final status
+    int dealer_hand_value = game.get_dealer_hand_value();
+	int player_hand_value = 0;
+	for(unsigned int i=0; i < num_of_players; i++) {
+		std::string name = game.get_player_name(i);;
+		player_hand_value = game.get_player_hand_value(i);
+		if(player_hand_value > 21 || (player_hand_value < dealer_hand_value && dealer_hand_value <=21)) {
+			server.send_msg_to_all("[" + name + "]: LOST!");
+			game.set_lost_player(i);
+		}
+		else if(player_hand_value <= 21 && (player_hand_value > dealer_hand_value || dealer_hand_value > 21)) {
+			server.send_msg_to_all("[" + name + "]: WON!");
+			game.set_won_player(i);
+		}
+		else if(player_hand_value == dealer_hand_value) {
+            server.send_msg_to_all("[" + name + "]: MATCH THE DEALER!");
+		}
+		game.flush_player(i);
+	}
+	game.flush_dealer();
+    //exit
+    server.send_msg_to_all(":exit");
+    server.close_sockets();
 }
 
 void get_name() {

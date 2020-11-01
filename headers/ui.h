@@ -19,6 +19,7 @@ struct ui{
     static void header(std::string name, unsigned int wallet, unsigned int bet);
     static void header(std::string name, unsigned int wallet, unsigned int bet, int times);
     static void hand(std::string name, std::string hand, int total, bool dealer_first_round = false);
+    static std::string hand_str(std::string name, std::string hand, int total, bool dealer_first_round = false);
     static void under_construction();
 
 };

@@ -145,6 +145,13 @@ void ui::hand(std::string name, std::string hand, int total, bool dealer_first_r
         std::cout << " Total: " << total << "\n---" << std::endl;
 }
 
+std::string ui::hand_str(std::string name, std::string hand, int total, bool dealer_first_round) {
+    if(dealer_first_round)
+        return std::string() + "\n" + name + ":\n---\n" + hand + "\n Total: " + "> " + std::to_string(total) + "\n---\n";
+    else 
+        return std::string() + "\n" + name + ":\n---\n" + hand + "\n Total: " + std::to_string(total) + "\n---\n";
+}
+
 void ui::under_construction() {
     std::string str = R"(
          .------------------------------------------------------------------. 

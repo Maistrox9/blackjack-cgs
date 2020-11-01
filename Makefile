@@ -1,7 +1,7 @@
 all: blackjack server client
 
-blackjack: blackjack.o ui.o client.o game.o player.o hand.o deck.o card.o
-	g++ -W -Wall blackjack.o ui.o client.o game.o player.o hand.o deck.o card.o -o blackjack
+blackjack: blackjack.o ui.o server.o client.o game.o player.o hand.o deck.o card.o
+	g++ -pthread -W -Wall blackjack.o ui.o server.o client.o game.o player.o hand.o deck.o card.o -o blackjack
 
 server: main_server.o ui.o server.o game.o player.o hand.o deck.o card.o
 	g++ -W -Wall main_server.o ui.o server.o game.o player.o hand.o deck.o card.o -o server

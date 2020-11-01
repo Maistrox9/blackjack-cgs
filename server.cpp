@@ -43,10 +43,7 @@ void Server::recv_msg(int cli_sock, int cli_num) {
     if(received_msg == ":exit") {
         getpeername(cli_sock, (struct sockaddr*)&this->cli_addr, (socklen_t*)&this->sock_len);
         close(cli_sock);
-        std::cout << "[X]Disconnected from client" << cli_num << "; " << inet_ntoa(this->cli_addr.sin_addr) << ":" << ntohs(this->cli_addr.sin_port) << std::endl;
     }
-    else
-        std::cout << "==> Client " << cli_num << ": " << received_msg << std::endl;
 }
 
 std::string Server::recv_msg(int cli_sock) {
@@ -60,10 +57,7 @@ std::string Server::recv_msg(int cli_sock) {
     if(received_msg == ":exit") {
         getpeername(cli_sock, (struct sockaddr*)&this->cli_addr, (socklen_t*)&this->sock_len);
         close(cli_sock);
-        std::cout << "[X]Disconnected from client; " << inet_ntoa(this->cli_addr.sin_addr) << ":" << ntohs(this->cli_addr.sin_port) << std::endl;
     }
-    else
-        std::cout << "==> Client: " << received_msg << std::endl;
 
     return received_msg;
 }
@@ -79,25 +73,21 @@ int Server::get_client_socket(int cli_pos) {
 void Server::setup_socket(int pn) {
     this->portno = pn;
     //create socket
-    check(this->serv_sock = socket(AF_INET, SOCK_STREAM, 0), "[-]ERROR opening socket");  
-    std::cout << "[+]Server Socket is created." << std::endl;
+    check(this->serv_sock = socket(AF_INET, SOCK_STREAM, 0), "[-]ERROR opening socket");
     //initialize the adress stuct
     bzero((char *) &this->serv_addr, sizeof(this->serv_addr));
     this->serv_addr.sin_family = AF_INET;
     this->serv_addr.sin_addr.s_addr = INADDR_ANY;  
     this->serv_addr.sin_port = htons(this->portno);
     //bind socket
-    check(bind(this->serv_sock, (struct sockaddr *) &this->serv_addr, sizeof(this->serv_addr)), "[-]ERROR on Binding");  
-    std::cout << "[+]Bind to port " << this->portno << std::endl;
+    check(bind(this->serv_sock, (struct sockaddr *) &this->serv_addr, sizeof(this->serv_addr)), "[-]ERROR on Binding");
     //listen
     check(listen(this->serv_sock, 5), "[-]Error on Listening");
-    std::cout << "[+]Start Listening for new Connections...." << std::endl;
 }
 
 int Server::accept_new_connection() {
     int cli_sock;
     check(cli_sock = accept(this->serv_sock, (struct sockaddr *)&this->cli_addr, &this->sock_len), "[-]ERROR on accept");
-    std::cout << "[V]Connection accepted from " << inet_ntoa(this->cli_addr.sin_addr) << " port " << ntohs(this->cli_addr.sin_port) << std::endl;
     return cli_sock;
 }
 
@@ -107,7 +97,6 @@ void Server::listen_for_connections(int num_of_players) {
     for(int i=0; i < num_of_players; i++) {
         int cli_sock = accept_new_connection();
         msg = "Waiting for (" + std::to_string(num_of_players-(i+1)) + ") more Players to start the game....";
-        std::cout << "[=] " + msg << std::endl;
         this->clients_sockets.push_back(cli_sock);
         send_msg(cli_sock, "Welcome To the Server! [Player " + std::to_string(i+1) + "].");
         send_msg_to_all(msg);
