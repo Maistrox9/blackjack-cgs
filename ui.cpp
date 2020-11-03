@@ -1,6 +1,11 @@
 #include <iostream>
 #include "headers/ui.h"
 
+inline const char * const BoolToString(bool b)
+{
+  return b ? "true" : "false";
+}
+
 void ui::title(){
     std::string str = R"(
         ██████╗ ██╗      █████╗  ██████╗██╗  ██╗     ██╗ █████╗  ██████╗██╗  ██╗
@@ -150,6 +155,10 @@ std::string ui::hand_str(std::string name, std::string hand, int total, bool dea
         return std::string() + "\n" + name + ":\n---\n" + hand + "\n Total: " + "> " + std::to_string(total) + "\n---\n";
     else 
         return std::string() + "\n" + name + ":\n---\n" + hand + "\n Total: " + std::to_string(total) + "\n---\n";
+}
+
+std::string ui::hand_str(std::string name, std::string hand, int total, std::string status, bool blackjack) {
+    return std::string() + "\n" + name + ":\n---\n" + hand + "\n Total: " + std::to_string(total) + " | Status: " + status + " | BlackJack: " + BoolToString(blackjack) + "\n---\n";
 }
 
 void ui::under_construction() {

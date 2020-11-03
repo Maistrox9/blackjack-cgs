@@ -14,40 +14,56 @@ std::string Game::get_player_name() {
 	return this->player.get_name();
 }
 
-std::string Game::get_player_name(int plyr_pos) {
-	return this->players[plyr_pos].get_name();
+std::string Game::get_player_name(int plyr_idx) {
+	return this->players[plyr_idx].get_name();
 }
 
 int Game::get_player_wallet() {
 	return this->player.get_wallet();
 }
 
-int Game::get_player_wallet(int plyr_pos) {
-	return this->players[plyr_pos].get_wallet();
+int Game::get_player_wallet(int plyr_idx) {
+	return this->players[plyr_idx].get_wallet();
 }
 
 std::string Game::get_player_hand() {
 	return this->player.get_hand();
 }
 
-std::string Game::get_player_hand(int plyr_pos) {
-	return this->players[plyr_pos].get_hand();
+std::string Game::get_player_hand(int plyr_idx) {
+	return this->players[plyr_idx].get_hand();
 }
 
 std::string Game::get_player_ui_hand() {
 	return this->player.get_ui_hand();
 }
 
-std::string Game::get_player_ui_hand(int plyr_pos) {
-	return this->players[plyr_pos].get_ui_hand();
+std::string Game::get_player_ui_hand(int plyr_idx) {
+	return this->players[plyr_idx].get_ui_hand();
 }
 
 int Game::get_player_hand_value() {
 	return this->player.get_hand_value();
 }
 
-int Game::get_player_hand_value(int plyr_pos) {
-	return this->players[plyr_pos].get_hand_value();
+int Game::get_player_hand_value(int plyr_idx) {
+	return this->players[plyr_idx].get_hand_value();
+}
+
+std::string Game::get_player_status() {
+	return this->player.get_status();
+}
+
+std::string Game::get_player_status(int plyr_idx) {
+	return this->players[plyr_idx].get_status();
+}
+
+bool Game::get_player_blackjack() {
+	return this->player.blackjack;
+}
+
+bool Game::get_player_blackjack(int plyr_idx) {
+	return this->players[plyr_idx].blackjack;
 }
 
 std::string Game::get_dealer_hand(bool first_round) {
@@ -76,8 +92,8 @@ int Game::get_player_bet() {
 	return this->player.get_bet();
 }
 
-int Game::get_player_bet(int plyr_pos) {
-	return this->players[plyr_pos].get_bet();
+int Game::get_player_bet(int plyr_idx) {
+	return this->players[plyr_idx].get_bet();
 }
 
 void Game::set_player(std::string name, unsigned int wallet) {
@@ -89,24 +105,24 @@ void Game::set_bet_player(unsigned int bet) {
 	this->player.add_bet(bet);
 }
 
-void Game::set_bet_player(int plyr_pos, unsigned int bet) {
-	this->players[plyr_pos].add_bet(bet);
+void Game::set_bet_player(int plyr_idx, unsigned int bet) {
+	this->players[plyr_idx].add_bet(bet);
 }
 
-void Game::set_won_player() {
-	this->player.won_bet();
+void Game::set_player_status(short int status) {
+	this->player.set_status(status);
 }
 
-void Game::set_won_player(int plyr_pos) {
-	this->players[plyr_pos].won_bet();
+void Game::set_player_status(int plyr_idx, short int status) {
+	this->players[plyr_idx].set_status(status);
 }
 
-void Game::set_lost_player() {
-	this->player.lost_bet();
+void Game::enable_player_blackjack() {
+	this->player.blackjack = true;
 }
 
-void Game::set_lost_player(int plyr_pos) {
-	this->players[plyr_pos].lost_bet();
+void Game::enable_player_blackjack(int plyr_idx) {
+	this->players[plyr_idx].blackjack = true;
 }
 
 void Game::add_player(std::string name) {
@@ -117,8 +133,8 @@ void Game::add_card_player() {
 	this->player.hand_add_card(this->deck.deal_card());
 }
 
-void Game::add_card_player(int plyr_pos) {
-	this->players[plyr_pos].hand_add_card(this->deck.deal_card());
+void Game::add_card_player(int plyr_idx) {
+	this->players[plyr_idx].hand_add_card(this->deck.deal_card());
 }
 
 void Game::add_card_dealer(bool first_round) {
@@ -147,8 +163,8 @@ void Game::flush_player() {
 	this->player.flush();
 }
 
-void Game::flush_player(int plyr_pos) {
-	this->players[plyr_pos].flush();
+void Game::flush_player(int plyr_idx) {
+	this->players[plyr_idx].flush();
 }
 
 void Game::flush_dealer() {

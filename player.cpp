@@ -32,6 +32,10 @@ int Player::get_bet() {
 	return this->bet;
 }
 
+std::string Player::get_status() {
+	return this->status;
+}
+
 void Player::set_name(std::string name) {
 	this->name = name;
 }
@@ -40,21 +44,30 @@ void Player::set_wallet(unsigned int wallet) {
 	this->wallet = wallet;
 }
 
+void Player::set_status(short int status) {
+	switch (status) {
+	case -1: this->status = "Lost";
+			this->wallet -= this->bet;
+			break;
+	case 0: this->status = "Match";
+			break;
+	case 1: this->status = "Won";
+			this->wallet += this->bet;
+			break;
+	default:
+		break;
+	};
+}
+
 void Player::add_bet(int bet) {
 	this->bet = bet;
-}
-
-void Player::won_bet() {
-	this->wallet += this->bet;
-}
-
-void Player::lost_bet() {
-	this->wallet -= this->bet;
 }
 
 void Player::flush() {
 	this->hand.free();
 	this->bet = 0;
+	this->status = "...";
+	this->blackjack = false;
 	this->split = false;
 	this->doubleDown = false;
 }

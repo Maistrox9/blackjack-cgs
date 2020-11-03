@@ -5,6 +5,8 @@
 #include <termios.h>
 #include <unistd.h>
 #include <thread>
+#include<ios>
+#include<limits>
 #include "headers/ui.h"
 #include "headers/game.h"
 #include "headers/server.h"
@@ -308,13 +310,13 @@ bool new_game() {
         if(d_hand_value == 21) 
             std::cout << "Dealer BlackJack\n" << std::endl;
         //final status
-        if(p_hand_value > 21 || (p_hand_value < d_hand_value && d_hand_value <=21)) {
+        if(p_hand_value > 21 || (p_hand_value < d_hand_value && d_hand_value <= 21)) {
             std::cout << "*You: LOST!" << std::endl;
-            game.set_lost_player();
+            game.set_player_status(-1);
         }
         else if(p_hand_value <= 21 && (p_hand_value > d_hand_value || d_hand_value > 21)) {
             std::cout << "*You: WON!" << std::endl;
-            game.set_won_player();
+            game.set_player_status(1);
         }
         else if(p_hand_value == d_hand_value) 
             std::cout << "*You: MATCH THE DEALER!" << std::endl;
@@ -359,11 +361,11 @@ void host_new_game() {
             port_number = -1;
         }
     } while(port_number < 0 || port_number > 65535);
-    std::cout << port_number << std::endl;
     do {
-        std::cout << "How many players (between 2 and 10): ";
+        std::cout << "How many players (between 2 and 5): ";
         std::cin >> num_of_players;
-    } while(num_of_players < 2 || num_of_players > 10);
+    } while(num_of_players < 2 || num_of_players > 5);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::thread client_thread(join_game);
     game_server(port_number, num_of_players);
     client_thread.join();
@@ -385,6 +387,7 @@ bool join_game() {
             server_port_number = -1;
         }
     } while(server_port_number < 0 || server_port_number > 65535);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     client.setup_socket(server_port_number);
     if(!client.connect_to_server()) return false;
     std::string msg;
@@ -455,7 +458,7 @@ bool join_game() {
 
     do {
         msg = client.recv_msg();
-        if(msg.substr(0,2) == "\n") {
+        if(msg.substr(0,1) == "\n") {
             system("clear");
             ui::title();
             std::cout << msg << std::endl;
@@ -512,7 +515,7 @@ void game_server(int port_number, int num_of_players) {
     game.add_card_dealer();
     all_hands.push_back(ui::hand_str("Dealer", game.get_dealer_ui_hand(true), game.get_dealer_hand_value(true), true));
     for(unsigned int i=0; i < num_of_players; i++) {
-        all_hands.push_back(ui::hand_str(game.get_player_name(i), game.get_player_ui_hand(i), game.get_player_hand_value(i)));
+        all_hands.push_back(ui::hand_str(game.get_player_name(i), game.get_player_ui_hand(i), game.get_player_hand_value(i), game.get_player_status(i), game.get_player_blackjack(i)));
     }
     //show hands
     all_hands_str = "";
@@ -521,10 +524,8 @@ void game_server(int port_number, int num_of_players) {
     //check players
     int hand_value;
     for(unsigned int i=0; i < num_of_players; i++) {
-        std::string name = game.get_player_name(i);;
-        all_hands_str = "";
-        std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
-        server.send_msg_to_all_except(i, all_hands_str + "\n==> Server: Cheking [" + name + "]....");
+        std::string name = game.get_player_name(i);
+        server.send_msg_to_all_except(i, "Cheking [" + name + "]....");
         hand_value = game.get_player_hand_value(i);
         do {
             if(hand_value < 21) {
@@ -534,50 +535,75 @@ void game_server(int port_number, int num_of_players) {
                     game.add_card_player(i);
                     hand_value = game.get_player_hand_value(i);
                     server.send_msg(server.get_client_socket(i), std::to_string(hand_value));
-                    all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), hand_value);
+                    all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), hand_value, game.get_player_status(i), game.get_player_blackjack(i));
+                    all_hands_str = "";
+                    std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+                    server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + ": " + msg);
                 }
+                else 
+                    server.send_msg_to_all(name + ": " + msg);
+            }
+            if(hand_value == 21) {
+                game.enable_player_blackjack(i);
+                all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), hand_value, game.get_player_status(i), game.get_player_blackjack(i));
                 all_hands_str = "";
                 std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
-                server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + ": " + msg);
-            }
-            if(hand_value == 21)
                 server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + " BLACKJACK!");
-            else if(hand_value > 21)
+            }
+            else if(hand_value > 21) {
+                game.set_player_status(i, -1);
+                all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), hand_value, game.get_player_status(i), game.get_player_blackjack(i));
+                all_hands_str = "";
+                std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
                 server.send_msg_to_all(all_hands_str + "\n==> Server: " + name + " BUSTED!");
+            }
         } while(msg == "hit" && hand_value < 21);
     }
     //check dealer
+    std::string dealer_status;
     do {
         hand_value = game.get_dealer_hand_value();
-        server.send_msg_to_all("\n\tDealer:\n\t---\n\t" + game.get_dealer_hand() + "\n\t Total: " + std::to_string(hand_value) + "\n\t---");
         if(hand_value == 21)
-			server.send_msg_to_all("Dealer BlackJack!");
+            dealer_status = "BlackJack!";
 		else if(hand_value > 21)
-			server.send_msg_to_all("Dealer Busted!");
+            dealer_status = "BlackJack!";
 		else if(hand_value < 17)
 			game.add_card_dealer();
     } while(hand_value < 17);
+    all_hands[0] = ui::hand_str("Dealer", game.get_dealer_ui_hand(), game.get_dealer_hand_value());
+    all_hands_str = "";
+    std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+	server.send_msg_to_all(all_hands_str + "\n==> Server: Dealer " + dealer_status);
     //final status
     int dealer_hand_value = game.get_dealer_hand_value();
 	int player_hand_value = 0;
 	for(unsigned int i=0; i < num_of_players; i++) {
 		std::string name = game.get_player_name(i);;
 		player_hand_value = game.get_player_hand_value(i);
-		if(player_hand_value > 21 || (player_hand_value < dealer_hand_value && dealer_hand_value <=21)) {
-			server.send_msg_to_all("[" + name + "]: LOST!");
-			game.set_lost_player(i);
-		}
-		else if(player_hand_value <= 21 && (player_hand_value > dealer_hand_value || dealer_hand_value > 21)) {
-			server.send_msg_to_all("[" + name + "]: WON!");
-			game.set_won_player(i);
-		}
-		else if(player_hand_value == dealer_hand_value) {
-            server.send_msg_to_all("[" + name + "]: MATCH THE DEALER!");
-		}
-		game.flush_player(i);
+        if(player_hand_value <= 21) {
+            if(dealer_hand_value > 21 || player_hand_value > dealer_hand_value) {
+                game.set_player_status(i, 1);
+                all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), player_hand_value, game.get_player_status(i), game.get_player_blackjack(i));
+            }
+            else if(dealer_hand_value <= 21 && player_hand_value < dealer_hand_value) {
+                game.set_player_status(i, -1);
+                all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), player_hand_value, game.get_player_status(i), game.get_player_blackjack(i));
+            }
+            else if(player_hand_value == dealer_hand_value) {
+                game.set_player_status(i, 0);
+                all_hands[i+1] = ui::hand_str(name, game.get_player_ui_hand(i), player_hand_value, game.get_player_status(i), game.get_player_blackjack(i));
+		    }
+        }
 	}
+    all_hands_str = "";
+    std::for_each(all_hands.begin(), all_hands.end(), [&](const std::string &piece){ all_hands_str += piece; });
+    server.send_msg_to_all(all_hands_str + "\n==> Server: End of Game");
+    for(unsigned int i=0; i < num_of_players; i++) {
+        game.flush_player(i);
+    }
 	game.flush_dealer();
     //exit
+    usleep(15000000);
     server.send_msg_to_all(":exit");
     server.close_sockets();
 }

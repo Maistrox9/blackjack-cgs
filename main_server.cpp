@@ -91,11 +91,11 @@ int main() {
 		player_hand_value = game.get_player_hand_value(i);
 		if(player_hand_value > 21 || (player_hand_value < dealer_hand_value && dealer_hand_value <=21)) {
 			server.send_msg_to_all("[" + name + "]: LOST!");
-			game.set_lost_player(i);
+			game.set_player_status(i, -1);
 		}
 		else if(player_hand_value <= 21 && (player_hand_value > dealer_hand_value || dealer_hand_value > 21)) {
 			server.send_msg_to_all("[" + name + "]: WON!");
-			game.set_won_player(i);
+			game.set_player_status(i, 1);
 		}
 		else if(player_hand_value == dealer_hand_value) {
             server.send_msg_to_all("[" + name + "]: MATCH THE DEALER!");
