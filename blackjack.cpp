@@ -34,7 +34,7 @@ bool new_game();
 void load_game();
 void host_new_game();
 void game_server(int, int);
-bool join_game();
+bool join_game(bool host = false, int pn = 31210);
 void get_name();
 void get_bet();
 std::string get_current_dir();
@@ -279,7 +279,7 @@ bool new_game() {
             else {
                 do {
                     std::cout << "'hit' or 'stay'?: ";
-                    std::cin >> hit_stay;
+                    getline(std::cin, hit_stay);
                 } while (hit_stay != "hit" && hit_stay != "stay");
                 if (hit_stay == "hit") {
                     game.add_card_player();
@@ -324,7 +324,7 @@ bool new_game() {
         game.flush_dealer();
         do {
             std::cout << "continue [y/n]: ";
-            std::cin >> cont;
+            std::cin.get(cont);
         } while(cont != 'y' && cont != 'n');
         if(cont == 'n')
             return false;
@@ -347,15 +347,14 @@ void host_new_game() {
     int num_of_players;
     system("clear");
     ui::title();
-    //ui::under_construction();
+    std::cin.sync();
     do {
-        std::string s = "";
+        std::string pn_str = "";
         std::cout << "Enter port number (Default: 31210): ";
-        getline(std::cin, s);
-        std::stringstream ss(s);
+        getline(std::cin, pn_str);
         try {
-            if(s.empty()) port_number = 31210;
-            else port_number = std::stoi(s);
+            if(pn_str.empty()) port_number = 31210;
+            else port_number = std::stoi(pn_str);
         }
         catch(...) {
             port_number = -1;
@@ -363,31 +362,35 @@ void host_new_game() {
     } while(port_number < 0 || port_number > 65535);
     do {
         std::cout << "How many players (between 2 and 5): ";
-        std::cin >> num_of_players;
+        if(!(std::cin >> num_of_players)) num_of_players = 0;
+        std::cin.sync();
     } while(num_of_players < 2 || num_of_players > 5);
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::thread client_thread(join_game);
+    //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::thread client_thread(join_game, true, port_number);
     game_server(port_number, num_of_players);
     client_thread.join();
 }
 
-bool join_game() {
+bool join_game(bool host, int pn) {
     int server_port_number;
     Client client;
-    do {
-        std::string s = "";
-        std::cout << "Enter port number (Default: 31210): ";
-        getline(std::cin, s);
-        std::stringstream ss(s);
-        try {
-            if(s.empty()) server_port_number = 31210;
-            else server_port_number = std::stoi(s);
-        }
-        catch(...) {
-            server_port_number = -1;
-        }
-    } while(server_port_number < 0 || server_port_number > 65535);
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.sync();
+    if(host) server_port_number = pn;
+    else {
+        do {
+            std::string pn_str = "";
+            std::cout << "Enter port number (Default: " << pn << "): ";
+            getline(std::cin, pn_str);
+            try {
+                if(pn_str.empty()) server_port_number = pn;
+                else server_port_number = std::stoi(pn_str);
+            }
+            catch(...) {
+                server_port_number = -1;
+            }
+        } while(server_port_number < 0 || server_port_number > 65535);
+    }
+    //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     client.setup_socket(server_port_number);
     if(!client.connect_to_server()) return false;
     std::string msg;
@@ -399,6 +402,8 @@ bool join_game() {
         ui::title();
         std::cout << "==> Server: " << msg << std::endl;
     } while(msg != "Plaese enter your name");
+
+    std::cin.sync();
     
     do {
         std::cout << "==> You: ";
@@ -419,6 +424,8 @@ bool join_game() {
 
     int wallet = stoi(msg);
     int bet = 0;
+
+    std::cin.sync();
 
     do {
         std::cout << "==> You: ";
@@ -445,6 +452,8 @@ bool join_game() {
                 std::cout << "==> Server: " << msg << std::endl;
         } while(msg != "hit or stay?");
 
+        std::cin.sync();
+
         do {
             std::cout << "==> You: ";
             std::cin >> msg;
@@ -466,6 +475,8 @@ bool join_game() {
         else
             std::cout << "==> Server: " << msg << std::endl;
     } while(msg != ":exit");
+    
+    std::cin.sync();
 
     client.close_socket();
 
@@ -612,7 +623,7 @@ void get_name() {
     std::string name;
     ui::title;
     std::cout << "Enter your name: ";
-    std::cin >> name;
+    getline(std::cin, name);
     game.set_player(name);
 }
 
