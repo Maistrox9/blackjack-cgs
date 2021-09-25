@@ -5,8 +5,8 @@
 #include <termios.h>
 #include <unistd.h>
 #include <thread>
-#include<ios>
-#include<limits>
+#include <ios>
+#include <limits>
 #include "headers/ui.h"
 #include "headers/game.h"
 #include "headers/server.h"
